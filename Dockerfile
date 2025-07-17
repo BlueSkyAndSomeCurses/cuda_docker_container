@@ -5,11 +5,6 @@ ENV PATH="/root/miniconda3/bin:${PATH}"
 ARG PATH="/root/miniconda3/bin:${PATH}"
 ARG COMPUTE_CAP
 
-EXPOSE 5000
-
-COPY .zshrc .
-COPY ./entrypoint.sh .
-
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
     sudo \
@@ -41,20 +36,9 @@ RUN apt-get update && apt-get upgrade -y && \
     liblapack-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# RUN DISTRO_CODENAME=$(grep -oP 'VERSION_CODENAME=\K\w+' /etc/os-release) && \
-#     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
-#     gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null && \
-#     echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ ${DISTRO_CODENAME} main" | \
-#     tee /etc/apt/sources.list.d/kitware.list >/dev/null && \
-#     apt-get update && \
-#     apt-get install -y cmake && \
-#     cmake --version
-
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.30.1.tar.gz && \
     tar xfvz cmake-3.30.1.tar.gz && cd cmake-3.30.1 && \
     ./bootstrap && make -j$(nproc) && sudo make install
-
-RUN chsh -s /usr/bin/zsh root
 
 RUN arch=$(uname -m) && \
     if [ "$arch" = "x86_64" ]; then \
@@ -70,9 +54,6 @@ RUN arch=$(uname -m) && \
     bash miniconda.sh -b -p /root/miniconda3 && \
     rm -f miniconda.sh 
 
-RUN /usr/bin/zsh -c conda init && \
-    /usr/bin/zsh -c conda activate
-    # conda install nvidia
 
 
 RUN apt-get update && apt-get upgrade -y && \
@@ -97,6 +78,32 @@ RUN git clone https://github.com/colmap/glomap.git --depth=1 && \
     cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=${COMPUTE_CAP} && \ 
     ninja && ninja install
 
-CMD [ "./entrypoint.sh" ]
 
-# ENTRYPOINT [ "/usr/bin/zsh" ]
+EXPOSE 5000
+
+COPY .zshrc /home/ubuntu/.zshrc
+COPY ./entrypoint.sh /tmp/entrypoint.sh
+
+# SETUP CONDA ENV
+
+RUN chsh -s /usr/bin/zsh root
+
+RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
+RUN /usr/bin/zsh -c conda init && \
+    /usr/bin/zsh -c conda activate
+
+COPY environment.yaml .
+RUN conda env create -f environment.yaml
+
+RUN apt-get update && apt-get upgrade -y
+
+COPY .zshrc /home/ubuntu/.zshrc
+RUN chmod +x /tmp/entrypoint.sh
+RUN chmod -R +rx /root/miniconda3
+USER ubuntu
+WORKDIR /home/ubuntu
+
+CMD ["/tmp/entrypoint.sh"]
+

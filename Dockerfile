@@ -1,8 +1,8 @@
 FROM nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04
 WORKDIR /home/ubuntu
 
-ENV PATH="/root/miniconda3/bin:${PATH}"
-ARG PATH="/root/miniconda3/bin:${PATH}"
+ENV PATH="/home/ubuntu/miniconda3/bin:${PATH}"
+ARG PATH="/home/ubuntu/miniconda3/bin:${PATH}"
 ARG COMPUTE_CAP
 
 RUN apt-get update && apt-get upgrade -y && \
@@ -50,8 +50,8 @@ RUN arch=$(uname -m) && \
     exit 1; \
     fi && \
     wget $MINICONDA_URL -O miniconda.sh && \
-    mkdir -p /root/.conda && \
-    bash miniconda.sh -b -p /root/miniconda3 && \
+    mkdir -p /home/ubuntu/.conda && \
+    bash miniconda.sh -b -p /home/ubuntu/miniconda3 && \
     rm -f miniconda.sh 
 
 
@@ -101,7 +101,6 @@ RUN apt-get update && apt-get upgrade -y
 
 COPY .zshrc /home/ubuntu/.zshrc
 RUN chmod +x /tmp/entrypoint.sh
-RUN chmod -R +rx /root/miniconda3
 USER ubuntu
 WORKDIR /home/ubuntu
 

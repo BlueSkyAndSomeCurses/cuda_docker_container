@@ -1,10 +1,9 @@
-ARG BASE_IMAGE="ubuntu:22.04"
-
-FROM ${BASE_IMAGE}
+FROM nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04
 WORKDIR /home/ubuntu
 
 ENV PATH="/root/miniconda3/bin:${PATH}"
 ARG PATH="/root/miniconda3/bin:${PATH}"
+ARG COMPUTE_CAP
 
 EXPOSE 5000
 
@@ -72,35 +71,31 @@ RUN arch=$(uname -m) && \
     rm -f miniconda.sh 
 
 RUN /usr/bin/zsh -c conda init && \
-    /usr/bin/zsh -c conda activate && \
-    conda install nvidia
+    /usr/bin/zsh -c conda activate
+    # conda install nvidia
 
 
 RUN apt-get update && apt-get upgrade -y && \
     apt install -y  \
     libflann-dev \
-    # nvidia-cuda-toolkit \
-    # nvidia-cuda-toolkit-gcc \ 
     && rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/colmap/colmap.git && \
+    cd colmap && \
+    mkdir build && \
+    cd build && \
+    cmake .. -GNinja && \
+    ninja && ninja install
+
+ENV COMPUTE_CAP=${COMPUTE_CAP}
+RUN echo "hi $COMPUTE_CAP "
+
 
 RUN git clone https://github.com/colmap/glomap.git --depth=1 && \
     mkdir glomap/build && \
     cd glomap/build && \
-    cmake .. -GNinja && \ 
+    cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=${COMPUTE_CAP} && \ 
     ninja && ninja install
-
-RUN git clone https://github.com/colmap/colmap.git
-RUN cd colmap && \
-    git fetch https://github.com/colmap/colmap.git ${COLMAP_GIT_COMMIT} && \
-    git checkout FETCH_HEAD && \
-    mkdir build && \
-    cd build && \
-    cmake .. \
-        -GNinja \
-        -DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES} \
-        -DCMAKE_INSTALL_PREFIX=/colmap-install \
-        -DBLA_VENDOR=Intel10_64lp && \
-    ninja install
 
 CMD [ "./entrypoint.sh" ]
 

@@ -79,7 +79,6 @@ RUN git clone https://github.com/colmap/glomap.git --depth=1 && \
     ninja && ninja install
 
 
-EXPOSE 5000
 
 COPY .zshrc /home/ubuntu/.zshrc
 COPY ./entrypoint.sh /tmp/entrypoint.sh
@@ -108,5 +107,9 @@ RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu && \
 USER ubuntu
 WORKDIR /home/ubuntu
 
+EXPOSE 5000
+EXPOSE 22
+RUN sudo apt update && sudo apt install -y openssh-server 
 CMD ["/tmp/entrypoint.sh"]
+
 

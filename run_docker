@@ -6,4 +6,4 @@ docker buildx build -f "./Dockerfile" --tag "cuda_docker" --label "cuda_docker" 
 # docker buildx build -f "./Dockerfile" --tag "cuda_docker" --label "cuda_docker" . --build-arg BUILD_JOBS=4 --build-arg SWAP_SIZE=8192 
 
 # docker run -it cuda_docker:latest
-docker run -it --rm --runtime=nvidia --gpus all cuda_docker:latest
+docker run -it --rm --runtime=nvidia --gpus all --name cuda_container -p 2222:22 -p 5000:500p0 cuda_docker:latest

@@ -14,5 +14,7 @@ dependencies:
   - torchvision
   - opencv
   - pip
+  - hydra-core
+  - omegaconf
   - pip:
       - python-multipart  # in case you later add file uploads

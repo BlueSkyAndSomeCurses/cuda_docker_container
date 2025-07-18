@@ -101,6 +101,10 @@ RUN apt-get update && apt-get upgrade -y
 
 COPY .zshrc /home/ubuntu/.zshrc
 RUN chmod +x /tmp/entrypoint.sh
+
+RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu && \
+    chmod 0440 /etc/sudoers.d/ubuntu
+
 USER ubuntu
 WORKDIR /home/ubuntu
 

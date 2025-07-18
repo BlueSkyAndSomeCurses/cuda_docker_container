@@ -3,6 +3,7 @@
 source /home/ubuntu/miniconda3/etc/profile.d/conda.sh
 conda activate ADHD
 
+echo "/tmp/entrypoint.sh" > "/home/ubuntu/.profile"
 sudo service ssh start
 
 exec zsh -il

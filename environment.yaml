@@ -16,5 +16,9 @@ dependencies:
   - pip
   - hydra-core
   - omegaconf
+  - pycolmap
+  - enlighten
+  - ffmpeg
+  - ffmpeg-python
   - pip:
       - python-multipart  # in case you later add file uploads
